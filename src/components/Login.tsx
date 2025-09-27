@@ -101,9 +101,8 @@ export function Login() {
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="text-sm font-medium text-gray-900 mb-2">Demo Credentials:</h3>
             <div className="space-y-1 text-sm text-gray-600">
-              <p><strong>Admin:</strong> admin@university.edu / password</p>
-              <p><strong>Coordinator:</strong> coordinator@university.edu / password</p>
-              <p><strong>Reviewer:</strong> reviewer@university.edu / password</p>
+              <p><strong>Note:</strong> Please set up your Supabase database first by clicking "Connect to Supabase" in the top right corner.</p>
+              <p className="text-xs mt-2">After setup, you can create user accounts through the Supabase dashboard or implement a registration system.</p>
             </div>
           </div>
         </div>

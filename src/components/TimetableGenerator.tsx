@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase, dbHelpers } from '../lib/supabase';
 import { 
   Settings, 
   Clock, 
@@ -19,6 +20,12 @@ export function TimetableGenerator() {
   const [activeTab, setActiveTab] = useState('parameters');
   const [loading, setLoading] = useState(false);
   const [generatedTimetables, setGeneratedTimetables] = useState<GeneratedTimetable[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [classrooms, setClassrooms] = useState<any[]>([]);
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [faculty, setFaculty] = useState<any[]>([]);
+  const [batches, setBatches] = useState<any[]>([]);
+  const [timeSlots, setTimeSlots] = useState<any[]>([]);
   
   const [parameters, setParameters] = useState<OptimizationParameters>({
     maxClassesPerDay: 6,
@@ -33,53 +40,130 @@ export function TimetableGenerator() {
   });
 
   const [basicData, setBasicData] = useState({
-    departments: ['Computer Science', 'Mathematics', 'Physics', 'Chemistry'],
     semesters: [1, 2, 3, 4, 5, 6, 7, 8],
-    selectedDepartment: 'Computer Science',
+    selectedDepartmentId: '',
     selectedSemester: 5,
     totalBatches: 4,
     totalSubjects: 8
   });
 
-  const mockClassrooms = [
-    { id: '1', name: 'Room 101', capacity: 60, type: 'lecture' as const, equipment: ['Projector', 'Whiteboard'], building: 'Main', floor: 1 },
-    { id: '2', name: 'Lab 201', capacity: 30, type: 'laboratory' as const, equipment: ['Computers', 'Network'], building: 'IT', floor: 2 },
-    { id: '3', name: 'Room 301', capacity: 80, type: 'lecture' as const, equipment: ['Smart Board'], building: 'Main', floor: 3 }
-  ];
+  // Load initial data
+  React.useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const [depts, rooms, slots] = await Promise.all([
+          dbHelpers.getDepartments(),
+          dbHelpers.getClassrooms(),
+          dbHelpers.getTimeSlots()
+        ]);
 
-  const mockSubjects = [
-    { id: '1', name: 'Data Structures', code: 'CS501', department: 'Computer Science', semester: 5, credits: 4, hoursPerWeek: 4, type: 'theory' as const },
-    { id: '2', name: 'Database Systems', code: 'CS502', department: 'Computer Science', semester: 5, credits: 3, hoursPerWeek: 3, type: 'theory' as const },
-    { id: '3', name: 'OS Lab', code: 'CS503', department: 'Computer Science', semester: 5, credits: 2, hoursPerWeek: 4, type: 'practical' as const, requiredEquipment: ['Computers'] }
-  ];
+        setDepartments(depts || []);
+        setClassrooms(rooms || []);
+        setTimeSlots(slots || []);
 
-  const mockFaculty = [
-    { id: '1', name: 'Dr. Smith', email: 'smith@uni.edu', department: 'Computer Science', subjects: ['1', '2'], maxHoursPerWeek: 20, averageLeavesPerMonth: 2 },
-    { id: '2', name: 'Prof. Johnson', email: 'johnson@uni.edu', department: 'Computer Science', subjects: ['3'], maxHoursPerWeek: 18, averageLeavesPerMonth: 1 }
-  ];
+        // Set first department as default
+        if (depts && depts.length > 0) {
+          setBasicData(prev => ({ ...prev, selectedDepartmentId: depts[0].id }));
+        }
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      }
+    };
 
-  const mockBatches = [
-    { id: '1', name: 'CS-A', department: 'Computer Science', semester: 5, studentCount: 55, subjects: ['1', '2', '3'], shift: 'morning' as const },
-    { id: '2', name: 'CS-B', department: 'Computer Science', semester: 5, studentCount: 50, subjects: ['1', '2', '3'], shift: 'morning' as const }
-  ];
+    loadInitialData();
+  }, []);
 
-  const mockTimeSlots = [
-    { id: '1', day: 'Monday', startTime: '09:00', endTime: '10:00', duration: 1 },
-    { id: '2', day: 'Monday', startTime: '10:15', endTime: '11:15', duration: 1 },
-    { id: '3', day: 'Monday', startTime: '11:30', endTime: '12:30', duration: 1 },
-    { id: '4', day: 'Tuesday', startTime: '09:00', endTime: '10:00', duration: 1 },
-    { id: '5', day: 'Tuesday', startTime: '10:15', endTime: '11:15', duration: 1 }
-  ];
+  // Load department-specific data when department changes
+  React.useEffect(() => {
+    const loadDepartmentData = async () => {
+      if (!basicData.selectedDepartmentId) return;
+
+      try {
+        const [subjectsData, facultyData, batchesData] = await Promise.all([
+          dbHelpers.getSubjects(basicData.selectedDepartmentId, basicData.selectedSemester),
+          dbHelpers.getFaculty(basicData.selectedDepartmentId),
+          dbHelpers.getBatches(basicData.selectedDepartmentId, basicData.selectedSemester)
+        ]);
+
+        setSubjects(subjectsData || []);
+        setFaculty(facultyData || []);
+        setBatches(batchesData || []);
+      } catch (error) {
+        console.error('Error loading department data:', error);
+      }
+    };
+
+    loadDepartmentData();
+  }, [basicData.selectedDepartmentId, basicData.selectedSemester]);
 
   const handleGenerateTimetables = async () => {
+    if (!basicData.selectedDepartmentId) {
+      alert('Please select a department first');
+      return;
+    }
+
     setLoading(true);
     try {
+      // Transform database data to match the optimizer interface
+      const transformedClassrooms = classrooms.map(c => ({
+        id: c.id,
+        name: c.name,
+        capacity: c.capacity,
+        type: c.type,
+        equipment: c.equipment || [],
+        building: c.building,
+        floor: c.floor
+      }));
+
+      const transformedSubjects = subjects.map(s => ({
+        id: s.id,
+        name: s.name,
+        code: s.code,
+        department: departments.find(d => d.id === basicData.selectedDepartmentId)?.name || '',
+        semester: s.semester,
+        credits: s.credits,
+        hoursPerWeek: s.hours_per_week,
+        type: s.type,
+        requiredEquipment: s.required_equipment || [],
+        maxStudents: s.max_students
+      }));
+
+      const transformedFaculty = faculty.map(f => ({
+        id: f.id,
+        name: f.name,
+        email: f.email,
+        department: departments.find(d => d.id === basicData.selectedDepartmentId)?.name || '',
+        subjects: f.faculty_subjects?.map((fs: any) => fs.subjects.id) || [],
+        maxHoursPerWeek: f.max_hours_per_week,
+        averageLeavesPerMonth: f.average_leaves_per_month,
+        preferredTimeSlots: f.preferred_time_slots || [],
+        unavailableSlots: f.unavailable_slots || []
+      }));
+
+      const transformedBatches = batches.map(b => ({
+        id: b.id,
+        name: b.name,
+        department: departments.find(d => d.id === basicData.selectedDepartmentId)?.name || '',
+        semester: b.semester,
+        studentCount: b.student_count,
+        subjects: b.batch_subjects?.map((bs: any) => bs.subjects.id) || [],
+        shift: b.shift
+      }));
+
+      const transformedTimeSlots = timeSlots.map(ts => ({
+        id: ts.id,
+        day: ts.day,
+        startTime: ts.start_time,
+        endTime: ts.end_time,
+        duration: ts.duration
+      }));
+
       const optimizer = new TimetableOptimizer(
-        mockClassrooms,
-        mockSubjects,
-        mockFaculty,
-        mockBatches,
-        mockTimeSlots,
+        transformedClassrooms,
+        transformedSubjects,
+        transformedFaculty,
+        transformedBatches,
+        transformedTimeSlots,
         [],
         parameters
       );
@@ -169,12 +253,13 @@ export function TimetableGenerator() {
                     Department
                   </label>
                   <select
-                    value={basicData.selectedDepartment}
-                    onChange={(e) => setBasicData({...basicData, selectedDepartment: e.target.value})}
+                    value={basicData.selectedDepartmentId}
+                    onChange={(e) => setBasicData({...basicData, selectedDepartmentId: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {basicData.departments.map(dept => (
-                      <option key={dept} value={dept}>{dept}</option>
+                    <option value="">Select Department</option>
+                    {departments.map(dept => (
+                      <option key={dept.id} value={dept.id}>{dept.name}</option>
                     ))}
                   </select>
                 </div>

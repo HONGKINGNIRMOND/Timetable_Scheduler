@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase, dbHelpers } from '../lib/supabase';
 import { 
   Calendar, 
   Users, 
@@ -36,57 +37,60 @@ export function Dashboard() {
   const [recentTimetables, setRecentTimetables] = useState<GeneratedTimetable[]>([]);
 
   useEffect(() => {
-    // Mock recent timetables data
-    setRecentTimetables([
-      {
-        id: '1',
-        name: 'Computer Science - Semester 5',
-        entries: [],
-        score: 92,
-        metrics: {
-          classroomUtilization: 88,
-          facultyWorkloadBalance: 94,
-          conflictCount: 2,
-          preferenceMatch: 91
-        },
-        conflicts: [],
-        suggestions: [],
-        generatedAt: new Date('2024-01-15'),
-        status: 'approved'
-      },
-      {
-        id: '2',
-        name: 'Mathematics - Semester 3',
-        entries: [],
-        score: 87,
-        metrics: {
-          classroomUtilization: 82,
-          facultyWorkloadBalance: 89,
-          conflictCount: 5,
-          preferenceMatch: 88
-        },
-        conflicts: [],
-        suggestions: [],
-        generatedAt: new Date('2024-01-14'),
-        status: 'under_review'
-      },
-      {
-        id: '3',
-        name: 'Physics - Semester 7',
-        entries: [],
-        score: 85,
-        metrics: {
-          classroomUtilization: 90,
-          facultyWorkloadBalance: 78,
-          conflictCount: 3,
-          preferenceMatch: 86
-        },
-        conflicts: [],
-        suggestions: [],
-        generatedAt: new Date('2024-01-13'),
-        status: 'draft'
+    const loadDashboardData = async () => {
+      try {
+        // Load dashboard statistics
+        const [classrooms, subjects, faculty, batches, timetables] = await Promise.all([
+          dbHelpers.getClassrooms(),
+          dbHelpers.getSubjects(),
+          dbHelpers.getFaculty(),
+          dbHelpers.getBatches(),
+          dbHelpers.getTimetables()
+        ]);
+
+        setStats({
+          totalClassrooms: classrooms?.length || 0,
+          totalSubjects: subjects?.length || 0,
+          totalFaculty: faculty?.length || 0,
+          totalBatches: batches?.length || 0,
+          activeTimetables: timetables?.filter(t => t.status === 'approved').length || 0,
+          pendingApprovals: timetables?.filter(t => t.status === 'under_review').length || 0
+        });
+
+        // Transform timetables data
+        const transformedTimetables = timetables?.slice(0, 5).map(t => ({
+          id: t.id,
+          name: t.name,
+          entries: [],
+          score: t.score,
+          metrics: {
+            classroomUtilization: t.classroom_utilization,
+            facultyWorkloadBalance: t.faculty_workload_balance,
+            conflictCount: t.conflict_count,
+            preferenceMatch: t.preference_match
+          },
+          conflicts: [],
+          suggestions: t.suggestions || [],
+          generatedAt: new Date(t.created_at),
+          status: t.status as 'draft' | 'under_review' | 'approved' | 'rejected'
+        })) || [];
+
+        setRecentTimetables(transformedTimetables);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        // Set default values on error
+        setStats({
+          totalClassrooms: 0,
+          totalSubjects: 0,
+          totalFaculty: 0,
+          totalBatches: 0,
+          activeTimetables: 0,
+          pendingApprovals: 0
+        });
       }
-    ]);
+    };
+
+    loadDashboardData();
   }, []);
 
   const StatCard = ({ icon: Icon, title, value, change, color }: any) => (
