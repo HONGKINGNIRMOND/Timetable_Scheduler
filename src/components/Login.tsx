@@ -101,8 +101,26 @@ export function Login() {
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="text-sm font-medium text-gray-900 mb-2">Demo Credentials:</h3>
             <div className="space-y-1 text-sm text-gray-600">
-              <p><strong>Note:</strong> Please set up your Supabase database first by clicking "Connect to Supabase" in the top right corner.</p>
-              <p className="text-xs mt-2">After setup, you can create user accounts through the Supabase dashboard or implement a registration system.</p>
+              <div className="space-y-2">
+                <div className="bg-blue-50 p-3 rounded border">
+                  <p className="font-medium text-blue-900">Admin Account:</p>
+                  <p className="text-blue-700">Email: admin@university.edu</p>
+                  <p className="text-blue-700">Password: admin123</p>
+                </div>
+                <div className="bg-green-50 p-3 rounded border">
+                  <p className="font-medium text-green-900">Coordinator Account:</p>
+                  <p className="text-green-700">Email: coordinator@university.edu</p>
+                  <p className="text-green-700">Password: coord123</p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded border">
+                  <p className="font-medium text-purple-900">Reviewer Account:</p>
+                  <p className="text-purple-700">Email: reviewer@university.edu</p>
+                  <p className="text-purple-700">Password: review123</p>
+                </div>
+              </div>
+              <p className="text-xs mt-3 text-gray-500">
+                <strong>Setup:</strong> Click "Connect to Supabase" in the top right, then create these accounts in your Supabase Auth dashboard.
+              </p>
             </div>
           </div>
         </div>
