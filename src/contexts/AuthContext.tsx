@@ -75,22 +75,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        console.error('Login error:', error);
+        console.error('Login error:', error.message);
         return false;
       }
 
       if (data.user) {
-        const profile = await dbHelpers.getCurrentUserProfile();
-        if (profile) {
-          setUser({
-            id: profile.id,
-            name: profile.name,
-            email: profile.email,
-            role: profile.role,
-            department: profile.departments?.name
-          });
-          return true;
-        }
+        // For demo purposes, create a simple user object
+        const demoUser = {
+          id: data.user.id,
+          name: email === 'admin@university.edu' ? 'Admin User' : 
+                email === 'coordinator@university.edu' ? 'Coordinator User' : 
+                'Reviewer User',
+          email: data.user.email || email,
+          role: email === 'admin@university.edu' ? 'admin' as const : 
+                email === 'coordinator@university.edu' ? 'coordinator' as const : 
+                'reviewer' as const,
+          department: 'Computer Science'
+        };
+        
+        setUser(demoUser);
+        return true;
       }
 
       return false;
