@@ -139,14 +139,9 @@ export function Login() {
                   <p className="text-blue-700">Password: admin123</p>
                 </div>
                 <div className="bg-green-50 p-3 rounded border">
-                  <p className="font-medium text-green-900">Coordinator Account:</p>
-                  <p className="text-green-700">Email: coordinator@university.edu</p>
-                  <p className="text-green-700">Password: coord123</p>
-                </div>
-                <div className="bg-purple-50 p-3 rounded border">
-                  <p className="font-medium text-purple-900">Reviewer Account:</p>
-                  <p className="text-purple-700">Email: reviewer@university.edu</p>
-                  <p className="text-purple-700">Password: review123</p>
+                  <p className="font-medium text-green-900">Student Account:</p>
+                  <p className="text-green-700">Email: student@university.edu</p>
+                  <p className="text-green-700">Password: student123</p>
                 </div>
               </div>
               <p className="text-xs mt-3 text-gray-500">
