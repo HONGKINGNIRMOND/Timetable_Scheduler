@@ -26,13 +26,9 @@ export const dbHelpers = {
     // For demo purposes, return a simple profile
     return {
       id: user.id,
-      name: user.email === 'admin@university.edu' ? 'Admin User' : 
-            user.email === 'coordinator@university.edu' ? 'Coordinator User' : 
-            'Reviewer User',
+      name: user.email === 'admin@university.edu' ? 'Admin User' : 'Student User',
       email: user.email || '',
-      role: user.email === 'admin@university.edu' ? 'admin' : 
-            user.email === 'coordinator@university.edu' ? 'coordinator' : 
-            'reviewer',
+      role: user.email === 'admin@university.edu' ? 'admin' : 'student',
       auth_id: user.id,
       department_id: null,
       created_at: new Date().toISOString(),

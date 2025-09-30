@@ -83,13 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // For demo purposes, create a simple user object
         const demoUser = {
           id: data.user.id,
-          name: email === 'admin@university.edu' ? 'Admin User' : 
-                email === 'coordinator@university.edu' ? 'Coordinator User' : 
-                'Reviewer User',
+          name: email === 'admin@university.edu' ? 'Admin User' : 'Student User',
           email: data.user.email || email,
-          role: email === 'admin@university.edu' ? 'admin' as const : 
-                email === 'coordinator@university.edu' ? 'coordinator' as const : 
-                'reviewer' as const,
+          role: email === 'admin@university.edu' ? 'admin' as const : 'student' as const,
           department: 'Computer Science'
         };
         
