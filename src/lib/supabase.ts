@@ -185,16 +185,6 @@ export const dbHelpers = {
           name,
           code
         ),
-        created_by_user:users!created_by (
-          id,
-          name,
-          email
-        ),
-        approved_by_user:users!approved_by (
-          id,
-          name,
-          email
-        )
       `);
 
     if (departmentId) {
