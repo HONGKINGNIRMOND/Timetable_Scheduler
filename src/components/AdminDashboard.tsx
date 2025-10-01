@@ -118,10 +118,6 @@ export function AdminDashboard() {
         })) || [];
 
         setRecentTimetables(transformedTimetables);
-
-        if (depts && depts.length > 0) {
-          setBasicData(prev => ({ ...prev, selectedDepartmentId: depts[0].id }));
-        }
       } catch (error) {
         console.error('Error loading dashboard data:', error);
       }
@@ -217,14 +213,6 @@ export function AdminDashboard() {
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-          {change && (
-            <p className={`text-sm mt-1 flex items-center ${
-              change > 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              <TrendingUp size={14} className="mr-1" />
-              {change > 0 ? '+' : ''}{change}%
-            </p>
-          )}
         </div>
         <div className={`${color} p-3 rounded-lg`}>
           <Icon size={24} className="text-white" />
@@ -322,28 +310,24 @@ export function AdminDashboard() {
                 icon={MapPin}
                 title="Classrooms"
                 value={stats.totalClassrooms}
-                change={5}
                 color="bg-blue-500"
               />
               <StatCard
                 icon={BookOpen}
                 title="Subjects"
                 value={stats.totalSubjects}
-                change={8}
                 color="bg-green-500"
               />
               <StatCard
                 icon={Users}
                 title="Faculty"
                 value={stats.totalFaculty}
-                change={3}
                 color="bg-purple-500"
               />
               <StatCard
                 icon={Calendar}
                 title="Batches"
                 value={stats.totalBatches}
-                change={-2}
                 color="bg-orange-500"
               />
               <StatCard
@@ -422,17 +406,11 @@ export function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="text-sm font-medium text-gray-900">{timetable.score}%</div>
-                            <div className="ml-2 w-16 bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="bg-blue-600 h-2 rounded-full" 
-                                style={{ width: `${timetable.score}%` }}
-                              ></div>
-                            </div>
+                            <div className="text-sm font-medium text-gray-900">{timetable.score}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {timetable.metrics.classroomUtilization}%
+                          {timetable.metrics.classroomUtilization}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {timetable.generatedAt.toLocaleDateString()}

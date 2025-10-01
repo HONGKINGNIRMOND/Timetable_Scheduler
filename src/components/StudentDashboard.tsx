@@ -33,7 +33,6 @@ export function StudentDashboard() {
   const [departments, setDepartments] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
   const [timetableEntries, setTimetableEntries] = useState<TimetableEntry[]>([]);
-  const [loading, setLoading] = useState(false);
 
   // Sample timetable data
   const sampleTimetable: TimetableEntry[] = [
@@ -62,10 +61,6 @@ export function StudentDashboard() {
         setDepartments(depts || []);
         setBatches(batchesData || []);
         setTimetableEntries(sampleTimetable);
-
-        if (depts && depts.length > 0) {
-          setSelectedDepartment(depts[0].id);
-        }
       } catch (error) {
         console.error('Error loading data:', error);
         setTimetableEntries(sampleTimetable);
