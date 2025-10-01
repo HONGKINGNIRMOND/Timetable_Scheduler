@@ -184,7 +184,7 @@ export const dbHelpers = {
           id,
           name,
           code
-        ),
+        )
       `);
 
     if (departmentId) {
