@@ -128,27 +128,6 @@ export function Login() {
             </div>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-900 mb-2">Demo Credentials:</h3>
-            <div className="space-y-1 text-sm text-gray-600">
-              <div className="space-y-2">
-                <div className="bg-blue-50 p-3 rounded border">
-                  <p className="font-medium text-blue-900">Admin Account:</p>
-                  <p className="text-blue-700">Email: admin@university.edu</p>
-                  <p className="text-blue-700">Password: admin123</p>
-                </div>
-                <div className="bg-green-50 p-3 rounded border">
-                  <p className="font-medium text-green-900">Student Account:</p>
-                  <p className="text-green-700">Email: student@university.edu</p>
-                  <p className="text-green-700">Password: student123</p>
-                </div>
-              </div>
-              <p className="text-xs mt-3 text-gray-500">
-                <strong>Setup:</strong> Click "Connect to Supabase" in the top right, then create these accounts in your Supabase Auth dashboard.
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* Features */}

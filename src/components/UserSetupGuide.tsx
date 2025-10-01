@@ -13,7 +13,7 @@ export function UserSetupGuide() {
   const demoAccounts = [
     {
       role: 'Admin',
-      name: 'Dr. Sarah Johnson',
+      name: 'System Administrator',
       email: 'admin@university.edu',
       password: 'admin123',
       permissions: 'Full system access, user management, all departments',
@@ -21,7 +21,7 @@ export function UserSetupGuide() {
     },
     {
       role: 'Coordinator',
-      name: 'Prof. Michael Chen',
+      name: 'Department Coordinator',
       email: 'coordinator@university.edu',
       password: 'coord123',
       permissions: 'Department management, timetable creation, faculty assignment',
@@ -29,7 +29,7 @@ export function UserSetupGuide() {
     },
     {
       role: 'Reviewer',
-      name: 'Dr. Emily Rodriguez',
+      name: 'Academic Reviewer',
       email: 'reviewer@university.edu',
       password: 'review123',
       permissions: 'Timetable review and approval, conflict resolution',
