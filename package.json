@@ -1,7 +1,11 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "academic-timetable-platform",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Intelligent Academic Timetable Optimization Platform",
+  "keywords": ["academic", "timetable", "scheduling", "optimization", "react", "typescript", "supabase"],
+  "author": "Your Name",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,8 +14,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.58.0",
-    "lucide-react": "^0.544.0",
+    "@supabase/supabase-js": "^2.57.4",
+    "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
