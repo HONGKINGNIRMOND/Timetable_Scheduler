@@ -12,6 +12,7 @@ import {
   Eye
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { TimetableViewer } from './TimetableViewer';
 
 interface TimetableEntry {
   id: string;
@@ -33,6 +34,7 @@ export function StudentDashboard() {
   const [departments, setDepartments] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
   const [timetableEntries, setTimetableEntries] = useState<TimetableEntry[]>([]);
+  const [showTimetableViewer, setShowTimetableViewer] = useState(false);
 
   // Sample timetable data
   const sampleTimetable: TimetableEntry[] = [
@@ -412,7 +414,13 @@ export function StudentDashboard() {
                       </div>
                       <button className="w-full bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center">
                         <Eye size={16} className="mr-2" />
-                        View Timetable
+                        <button
+                          onClick={() => setShowTimetableViewer(true)}
+                          className="w-full bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                        >
+                          <Eye size={16} className="mr-2" />
+                          View Timetable
+                        </button>
                       </button>
                     </div>
                   ))}
@@ -422,6 +430,15 @@ export function StudentDashboard() {
           </>
         )}
       </div>
+
+      {/* Timetable Viewer Modal */}
+      {showTimetableViewer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-7xl w-full max-h-[95vh] overflow-hidden">
+            <TimetableViewer onClose={() => setShowTimetableViewer(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

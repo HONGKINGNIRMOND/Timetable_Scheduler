@@ -5,6 +5,7 @@ import { User } from '../types';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
+  signup: (email: string, password: string, userData: any) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
@@ -16,6 +17,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const signup = async (email: string, password: string, userData: any): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error('Signup error:', error.message);
+        return false;
+      }
+
+      if (data.user) {
+        // Create user profile in database
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            auth_id: data.user.id,
+            name: userData.name,
+            email: email,
+            role: 'student',
+            department_id: userData.departmentId
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          return false;
+        }
+
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Signup error:', error);
+      return false;
+    }
+  };
   React.useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
@@ -109,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user,
       login,
+      signup,
       logout,
       isAuthenticated: !!user,
       loading

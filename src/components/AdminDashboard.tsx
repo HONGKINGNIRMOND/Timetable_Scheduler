@@ -19,6 +19,10 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { TimetableOptimizer } from '../services/optimizationAlgorithm';
 import { GeneratedTimetable, OptimizationParameters } from '../types';
+import { ManageData } from './ManageData';
+import { TimetableViewer } from './TimetableViewer';
+import { TimetableApproval } from './TimetableApproval';
+import { ConflictResolution } from './ConflictResolution';
 
 interface DashboardStats {
   totalClassrooms: number;
@@ -32,6 +36,7 @@ interface DashboardStats {
 export function AdminDashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeSubTab, setActiveSubTab] = useState('');
   const [loading, setLoading] = useState(false);
   const [generatedTimetables, setGeneratedTimetables] = useState<GeneratedTimetable[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
@@ -289,6 +294,26 @@ export function AdminDashboard() {
                 >
                   Manage Data
                 </button>
+                <button
+                  onClick={() => setActiveTab('approval')}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    activeTab === 'approval' 
+                      ? 'bg-blue-100 text-blue-700' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Approvals
+                </button>
+                <button
+                  onClick={() => setActiveTab('conflicts')}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    activeTab === 'conflicts' 
+                      ? 'bg-blue-100 text-blue-700' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Conflicts
+                </button>
               </nav>
             </div>
           </div>
@@ -417,7 +442,15 @@ export function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button className="text-blue-600 hover:text-blue-900 mr-3">
-                            View
+                            <button
+                              onClick={() => {
+                                setActiveSubTab('viewer');
+                                setActiveTab('viewer');
+                              }}
+                              className="text-blue-600 hover:text-blue-900 mr-3"
+                            >
+                              View
+                            </button>
                           </button>
                           <button className="text-green-600 hover:text-green-900 mr-3">
                             Approve
@@ -568,13 +601,22 @@ export function AdminDashboard() {
 
         {/* Manage Tab */}
         {activeTab === 'manage' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-            <Settings size={48} className="mx-auto text-gray-400 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Data Management</h2>
-            <p className="text-gray-600">
-              Manage departments, classrooms, subjects, faculty, and student batches.
-            </p>
-          </div>
+          <ManageData />
+        )}
+
+        {/* Timetable Viewer Tab */}
+        {activeTab === 'viewer' && (
+          <TimetableViewer onClose={() => setActiveTab('dashboard')} />
+        )}
+
+        {/* Approval Tab */}
+        {activeTab === 'approval' && (
+          <TimetableApproval onClose={() => setActiveTab('dashboard')} />
+        )}
+
+        {/* Conflicts Tab */}
+        {activeTab === 'conflicts' && (
+          <ConflictResolution />
         )}
       </div>
     </div>
