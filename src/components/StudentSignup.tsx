@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GraduationCap, Mail, Lock, User, IdCard, BookOpen, Users, ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
+import { GraduationCap, Mail, Lock, User, Car as IdCard, BookOpen, Users, ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { dbHelpers } from '../lib/supabase';
 
