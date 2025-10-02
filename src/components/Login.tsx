@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { GraduationCap, Mail, Lock, AlertCircle, HelpCircle } from 'lucide-react';
+import { GraduationCap, Mail, Lock, AlertCircle, HelpCircle, UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { UserSetupGuide } from './UserSetupGuide';
+import { StudentSignup } from './StudentSignup';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -9,6 +10,7 @@ export function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSetupGuide, setShowSetupGuide] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,6 +29,10 @@ export function Login() {
       setLoading(false);
     }
   };
+
+  if (showSignup) {
+    return <StudentSignup onBackToLogin={() => setShowSignup(false)} />;
+  }
 
   if (showSetupGuide) {
     return (
@@ -124,6 +130,17 @@ export function Login() {
               >
                 <HelpCircle size={16} className="mr-1" />
                 Need help setting up? View Setup Guide
+              </button>
+            </div>
+
+            <div className="text-center mt-4 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-600 mb-2">Don't have a student account?</p>
+              <button
+                onClick={() => setShowSignup(true)}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center justify-center w-full"
+              >
+                <UserPlus size={16} className="mr-1" />
+                Create Student Account
               </button>
             </div>
           </form>
