@@ -19,7 +19,6 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { TimetableOptimizer } from '../services/optimizationAlgorithm';
 import { GeneratedTimetable, OptimizationParameters } from '../types';
-import { ManageData } from './ManageData';
 
 interface DashboardStats {
   totalClassrooms: number;
@@ -33,7 +32,6 @@ interface DashboardStats {
 export function AdminDashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [showManageData, setShowManageData] = useState(false);
   const [loading, setLoading] = useState(false);
   const [generatedTimetables, setGeneratedTimetables] = useState<GeneratedTimetable[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
@@ -127,10 +125,6 @@ export function AdminDashboard() {
 
     loadDashboardData();
   }, []);
-
-  if (showManageData) {
-    return <ManageData onClose={() => setShowManageData(false)} />;
-  }
 
   const handleGenerateTimetables = async () => {
     if (!basicData.selectedDepartmentId) {
@@ -574,21 +568,12 @@ export function AdminDashboard() {
 
         {/* Manage Tab */}
         {activeTab === 'manage' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-            <div className="text-center mb-8">
-              <Settings size={48} className="mx-auto text-gray-400 mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Data Management</h2>
-              <p className="text-gray-600 mb-6">
-                Manage departments, classrooms, subjects, faculty, and student batches.
-              </p>
-              <button
-                onClick={() => setShowManageData(true)}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center mx-auto"
-              >
-                <Settings size={18} className="mr-2" />
-                Open Data Management
-              </button>
-            </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            <Settings size={48} className="mx-auto text-gray-400 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Data Management</h2>
+            <p className="text-gray-600">
+              Manage departments, classrooms, subjects, faculty, and student batches.
+            </p>
           </div>
         )}
       </div>
