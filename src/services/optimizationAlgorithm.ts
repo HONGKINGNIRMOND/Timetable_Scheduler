@@ -42,8 +42,16 @@ export class TimetableOptimizer {
     const timetables: GeneratedTimetable[] = [];
 
     for (let i = 0; i < count; i++) {
-      const timetable = this.generateSingleTimetable(i);
-      timetables.push(timetable);
+      let bestAttempt = this.generateSingleTimetable(i);
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const candidate = this.generateSingleTimetable(i * 10 + attempt);
+        if (candidate.score > bestAttempt.score) {
+          bestAttempt = candidate;
+        }
+      }
+
+      timetables.push(bestAttempt);
     }
 
     return timetables.sort((a, b) => b.score - a.score);
@@ -170,24 +178,60 @@ export class TimetableOptimizer {
     availableFaculty: Faculty[]
   ): number {
     let scheduledHours = 0;
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    const classesNeeded = Math.ceil(requiredHours / 60);
+    let classesScheduled = 0;
 
     for (const day of days) {
-      if (scheduledHours >= requiredHours) break;
+      if (classesScheduled >= classesNeeded) break;
 
       const daySlots = this.timeSlots.filter(ts => ts.day === day);
-      const bestSlot = this.findBestSlotForBatch(daySlots, batch, entries);
+      const sortedSlots = this.sortSlotsByPreference(daySlots, batch, entries);
 
-      if (bestSlot) {
-        const assignment = this.assignSlot(subject, batch, bestSlot, availableFaculty, entries);
+      for (const slot of sortedSlots) {
+        if (classesScheduled >= classesNeeded) break;
+
+        const assignment = this.assignSlot(subject, batch, slot, availableFaculty, entries);
         if (assignment) {
           entries.push(assignment);
-          scheduledHours += bestSlot.duration;
+          scheduledHours += slot.duration;
+          classesScheduled++;
         }
       }
     }
 
     return scheduledHours;
+  }
+
+  private sortSlotsByPreference(
+    slots: TimeSlot[],
+    batch: Batch,
+    entries: TimetableEntry[]
+  ): TimeSlot[] {
+    const batchSchedule = entries.filter(e => e.batchId === batch.id);
+
+    return slots
+      .filter(slot =>
+        !batchSchedule.some(schedule =>
+          schedule.day === slot.day &&
+          this.slotsOverlap(schedule.timeSlot, slot)
+        )
+      )
+      .sort((a, b) => {
+        const aMinutes = this.timeToMinutes(a.startTime);
+        const bMinutes = this.timeToMinutes(b.startTime);
+
+        const preferredStart = this.timeToMinutes(this.parameters.preferredStartTime);
+        const preferredEnd = this.timeToMinutes(this.parameters.preferredEndTime);
+
+        const aInRange = aMinutes >= preferredStart && aMinutes < preferredEnd ? 1 : 0;
+        const bInRange = bMinutes >= preferredStart && bMinutes < preferredEnd ? 1 : 0;
+
+        if (aInRange !== bInRange) return bInRange - aInRange;
+
+        return aMinutes - bMinutes;
+      });
   }
 
   private scheduleWithFacultyBalance(
@@ -258,20 +302,30 @@ export class TimetableOptimizer {
     batch: Batch,
     entries: TimetableEntry[]
   ): TimeSlot | null {
-    // Check if batch is already scheduled in any of the available slots
     const batchSchedule = entries.filter(e => e.batchId === batch.id);
-    
-    const freeSlots = availableSlots.filter(slot => 
-      !batchSchedule.some(schedule => 
-        schedule.day === slot.day && 
+
+    const freeSlots = availableSlots.filter(slot =>
+      !batchSchedule.some(schedule =>
+        schedule.day === slot.day &&
         this.slotsOverlap(schedule.timeSlot, slot)
       )
     );
 
     if (freeSlots.length === 0) return null;
 
-    // Prefer slots that minimize gaps in the batch's daily schedule
-    return freeSlots[0]; // Simplified selection
+    return freeSlots.sort((a, b) => {
+      const aDaySchedule = batchSchedule.filter(e => e.day === a.day);
+      const bDaySchedule = batchSchedule.filter(e => e.day === b.day);
+
+      if (aDaySchedule.length !== bDaySchedule.length) {
+        return aDaySchedule.length - bDaySchedule.length;
+      }
+
+      const aMinutes = this.timeToMinutes(a.startTime);
+      const bMinutes = this.timeToMinutes(b.startTime);
+
+      return aMinutes - bMinutes;
+    })[0];
   }
 
   private assignSlot(

@@ -1,25 +1,31 @@
 import React, { useState } from 'react';
 import { supabase, dbHelpers } from '../lib/supabase';
-import { 
-  Settings, 
-  Clock, 
-  Users, 
-  MapPin, 
-  BookOpen, 
+import {
+  Settings,
+  Clock,
+  Users,
+  MapPin,
+  BookOpen,
   Play,
   Save,
   Download,
   AlertCircle,
   CheckCircle,
-  Loader
+  Loader,
+  Eye,
+  FileText,
+  X
 } from 'lucide-react';
 import { TimetableOptimizer } from '../services/optimizationAlgorithm';
 import { GeneratedTimetable, OptimizationParameters } from '../types';
+import { TimetablePreview } from './TimetablePreview';
+import { downloadTimetablePDF } from '../utils/pdfGenerator';
 
 export function TimetableGenerator() {
   const [activeTab, setActiveTab] = useState('parameters');
   const [loading, setLoading] = useState(false);
   const [generatedTimetables, setGeneratedTimetables] = useState<GeneratedTimetable[]>([]);
+  const [selectedTimetableForPreview, setSelectedTimetableForPreview] = useState<GeneratedTimetable | null>(null);
   const [departments, setDepartments] = useState<any[]>([]);
   const [classrooms, setClassrooms] = useState<any[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
@@ -95,6 +101,91 @@ export function TimetableGenerator() {
 
     loadDepartmentData();
   }, [basicData.selectedDepartmentId, basicData.selectedSemester]);
+
+  const handleSaveTimetable = async (timetable: GeneratedTimetable) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Please log in to save timetables');
+        return;
+      }
+
+      const { data: savedTimetable, error } = await supabase
+        .from('timetables')
+        .insert({
+          name: timetable.name,
+          department_id: basicData.selectedDepartmentId,
+          semester: basicData.selectedSemester,
+          academic_year: '2024-2025',
+          status: 'draft',
+          score: timetable.score,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const entriesData = timetable.entries.map(entry => ({
+        timetable_id: savedTimetable.id,
+        subject_id: entry.subjectId,
+        batch_id: entry.batchId,
+        faculty_id: entry.facultyId,
+        classroom_id: entry.classroomId,
+        time_slot_id: entry.timeSlot.id,
+        day: entry.day
+      }));
+
+      await supabase.from('timetable_entries').insert(entriesData);
+
+      alert('Timetable saved successfully!');
+    } catch (error) {
+      console.error('Error saving timetable:', error);
+      alert('Failed to save timetable');
+    }
+  };
+
+  const handleExportTimetable = (timetable: GeneratedTimetable) => {
+    const entries = timetable.entries.map(entry => {
+      const subject = subjects.find(s => s.id === entry.subjectId);
+      const facultyMember = faculty.find(f => f.id === entry.facultyId);
+      const classroom = classrooms.find(c => c.id === entry.classroomId);
+      const batch = batches.find(b => b.id === entry.batchId);
+
+      return {
+        day: entry.day,
+        time_slots: {
+          start_time: entry.timeSlot.startTime,
+          end_time: entry.timeSlot.endTime
+        },
+        subjects: {
+          name: subject?.name || 'Unknown',
+          code: subject?.code || 'N/A',
+          type: subject?.type || 'theory'
+        },
+        faculty: {
+          name: facultyMember?.name || 'Unknown'
+        },
+        classrooms: {
+          name: classroom?.name || 'Unknown',
+          building: classroom?.building || 'N/A'
+        },
+        batches: {
+          name: batch?.name || 'Unknown'
+        }
+      };
+    });
+
+    downloadTimetablePDF(
+      timetable.name,
+      entries,
+      {
+        department: departments.find(d => d.id === basicData.selectedDepartmentId)?.name,
+        semester: `Semester ${basicData.selectedSemester}`,
+        academicYear: '2024-2025'
+      }
+    );
+  };
 
   const handleGenerateTimetables = async () => {
     if (!basicData.selectedDepartmentId) {
@@ -442,13 +533,26 @@ export function TimetableGenerator() {
                           </p>
                         </div>
                         <div className="flex space-x-2">
-                          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center">
+                          <button
+                            onClick={() => setSelectedTimetableForPreview(timetable)}
+                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                          >
+                            <Eye size={16} className="mr-1" />
+                            Preview
+                          </button>
+                          <button
+                            onClick={() => handleSaveTimetable(timetable)}
+                            className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors flex items-center"
+                          >
                             <Save size={16} className="mr-1" />
                             Save
                           </button>
-                          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                          <button
+                            onClick={() => handleExportTimetable(timetable)}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                          >
                             <Download size={16} className="mr-1" />
-                            Export
+                            Export PDF
                           </button>
                         </div>
                       </div>
@@ -518,13 +622,29 @@ export function TimetableGenerator() {
                 {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Management
               </h3>
               <p className="text-gray-600">
-                This section would contain forms to manage {activeTab}. 
+                This section would contain forms to manage {activeTab}.
                 For the MVP, we're focusing on the core optimization engine.
               </p>
             </div>
           )}
         </div>
       </div>
+
+      {selectedTimetableForPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-7xl h-5/6 overflow-auto">
+            <TimetablePreview
+              timetable={selectedTimetableForPreview}
+              subjects={subjects}
+              faculty={faculty}
+              classrooms={classrooms}
+              batches={batches}
+              onClose={() => setSelectedTimetableForPreview(null)}
+              onExport={() => handleExportTimetable(selectedTimetableForPreview)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

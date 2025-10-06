@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, User, BookOpen, Download, Filter, Search, Eye, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, BookOpen, Download, Filter, Search, Eye, X, FileText } from 'lucide-react';
 import { dbHelpers } from '../lib/supabase';
+import { downloadTimetablePDF, previewTimetablePDF } from '../utils/pdfGenerator';
 
 interface TimetableViewerProps {
   timetableId?: string;
@@ -13,6 +14,8 @@ export function TimetableViewer({ timetableId, onClose }: TimetableViewerProps) 
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const timeSlots = [
@@ -132,18 +135,29 @@ export function TimetableViewer({ timetableId, onClose }: TimetableViewerProps) 
   });
 
   const exportToPDF = () => {
-    // Create a simple text export for now
-    const content = timetableEntries.map(entry => 
-      `${entry.day} ${entry.time_slots.start_time}-${entry.time_slots.end_time}: ${entry.subjects?.name} - ${entry.faculty?.name} - ${entry.classrooms?.name}`
-    ).join('\n');
-    
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `timetable-${timetableInfo?.name || 'export'}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadTimetablePDF(
+      timetableInfo?.name || 'Timetable',
+      timetableEntries,
+      {
+        department: timetableInfo?.department,
+        semester: timetableInfo?.semester,
+        academicYear: timetableInfo?.academicYear
+      }
+    );
+  };
+
+  const handlePreview = () => {
+    const url = previewTimetablePDF(
+      timetableInfo?.name || 'Timetable',
+      timetableEntries,
+      {
+        department: timetableInfo?.department,
+        semester: timetableInfo?.semester,
+        academicYear: timetableInfo?.academicYear
+      }
+    );
+    setPreviewUrl(url);
+    setShowPreview(true);
   };
 
   if (loading) {
@@ -180,11 +194,18 @@ export function TimetableViewer({ timetableId, onClose }: TimetableViewerProps) 
           </div>
           <div className="flex items-center space-x-2">
             <button
+              onClick={handlePreview}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+            >
+              <Eye size={16} className="mr-2" />
+              Preview
+            </button>
+            <button
               onClick={exportToPDF}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
             >
               <Download size={16} className="mr-2" />
-              Export
+              Export PDF
             </button>
             {onClose && (
               <button
@@ -315,6 +336,44 @@ export function TimetableViewer({ timetableId, onClose }: TimetableViewerProps) 
           </div>
         </div>
       </div>
+
+      {showPreview && previewUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-11/12 h-5/6 flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">PDF Preview</h3>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 p-4 overflow-auto">
+              <iframe
+                src={previewUrl}
+                className="w-full h-full border-0"
+                title="PDF Preview"
+              />
+            </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end space-x-2">
+              <button
+                onClick={() => setShowPreview(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={exportToPDF}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+              >
+                <Download size={16} className="mr-2" />
+                Download PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
