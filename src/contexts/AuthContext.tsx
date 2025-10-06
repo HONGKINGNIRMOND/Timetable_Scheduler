@@ -21,7 +21,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          data: {
+            name: userData.name,
+            student_id: userData.studentId,
+            department_id: userData.departmentId,
+            semester: userData.semester,
+            batch: userData.batch,
+            phone: userData.phone,
+            role: 'student'
+          }
+        }
       });
 
       if (error) {
@@ -30,20 +41,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data.user) {
-        // Create user profile in database
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            auth_id: data.user.id,
-            name: userData.name,
-            email: email,
-            role: 'student',
-            department_id: userData.departmentId
-          });
+        try {
+          const { error: profileError } = await supabase
+            .from('users')
+            .insert({
+              auth_id: data.user.id,
+              name: userData.name,
+              email: email,
+              role: 'student',
+              department_id: userData.departmentId
+            });
 
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          return false;
+          if (profileError) {
+            console.error('Profile creation error:', profileError.message);
+          }
+        } catch (profileErr) {
+          console.error('Profile creation failed:', profileErr);
         }
 
         return true;

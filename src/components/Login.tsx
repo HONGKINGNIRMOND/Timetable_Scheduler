@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { GraduationCap, Mail, Lock, AlertCircle, HelpCircle } from 'lucide-react';
+import { GraduationCap, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { UserSetupGuide } from './UserSetupGuide';
 import { StudentSignup } from './StudentSignup';
 
 export function Login() {
@@ -9,7 +8,6 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showSetupGuide, setShowSetupGuide] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
   const { login } = useAuth();
 
@@ -29,24 +27,6 @@ export function Login() {
       setLoading(false);
     }
   };
-
-  if (showSetupGuide) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="mb-6">
-            <button
-              onClick={() => setShowSetupGuide(false)}
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
-              ← Back to Login
-            </button>
-          </div>
-          <UserSetupGuide />
-        </div>
-      </div>
-    );
-  }
 
   if (showSignup) {
     return <StudentSignup onBack={() => setShowSignup(false)} />;
@@ -124,21 +104,11 @@ export function Login() {
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => setShowSetupGuide(true)}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center justify-center w-full"
+                onClick={() => setShowSignup(true)}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
-                <HelpCircle size={16} className="mr-1" />
-                Need help setting up? View Setup Guide
+                Create Student Account
               </button>
-              <div className="mt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowSignup(true)}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  Create Student Account
-                </button>
-              </div>
             </div>
           </form>
 
