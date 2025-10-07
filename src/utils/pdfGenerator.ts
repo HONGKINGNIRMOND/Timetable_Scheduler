@@ -31,6 +31,8 @@ export function generateTimetablePDF(
     department?: string;
     semester?: string;
     academicYear?: string;
+    startDate?: string;
+    endDate?: string;
   }
 ) {
   const doc = new jsPDF('landscape', 'mm', 'a4');
@@ -52,6 +54,17 @@ export function generateTimetablePDF(
       .join(' | ');
     doc.text(metaText, pageWidth / 2, yOffset, { align: 'center' });
     yOffset += 8;
+
+    if (metadata.startDate || metadata.endDate) {
+      const dateText = [
+        metadata.startDate && `Start: ${new Date(metadata.startDate).toLocaleDateString()}`,
+        metadata.endDate && `End: ${new Date(metadata.endDate).toLocaleDateString()}`
+      ]
+        .filter(Boolean)
+        .join(' | ');
+      doc.text(dateText, pageWidth / 2, yOffset, { align: 'center' });
+      yOffset += 8;
+    }
   }
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -140,6 +153,8 @@ export function downloadTimetablePDF(
     department?: string;
     semester?: string;
     academicYear?: string;
+    startDate?: string;
+    endDate?: string;
   }
 ) {
   const doc = generateTimetablePDF(timetableName, entries, metadata);
@@ -154,6 +169,8 @@ export function previewTimetablePDF(
     department?: string;
     semester?: string;
     academicYear?: string;
+    startDate?: string;
+    endDate?: string;
   }
 ): string {
   const doc = generateTimetablePDF(timetableName, entries, metadata);

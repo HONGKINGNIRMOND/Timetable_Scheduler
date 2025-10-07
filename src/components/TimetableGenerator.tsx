@@ -37,7 +37,7 @@ export function TimetableGenerator() {
     maxClassesPerDay: 6,
     preferredStartTime: '09:00',
     preferredEndTime: '17:00',
-    lunchBreakDuration: 60,
+    lunchBreakDuration: 50,
     minBreakBetweenClasses: 15,
     allowBackToBackClasses: true,
     prioritizeLabEquipment: true,
@@ -45,12 +45,32 @@ export function TimetableGenerator() {
     minimizeGapsBetweenClasses: true
   });
 
+  const [timeSlotConfig, setTimeSlotConfig] = useState({
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    classDuration: 60,
+    lunchStartTime: '11:30',
+    lunchEndTime: '12:20',
+    customSlots: [
+      { startTime: '08:00', endTime: '09:00' },
+      { startTime: '09:00', endTime: '10:00' },
+      { startTime: '10:00', endTime: '11:00' },
+      { startTime: '11:00', endTime: '11:30' },
+      { startTime: '12:20', endTime: '13:20' },
+      { startTime: '13:20', endTime: '14:20' },
+      { startTime: '14:20', endTime: '15:20' },
+      { startTime: '15:20', endTime: '16:20' },
+      { startTime: '16:20', endTime: '17:20' }
+    ]
+  });
+
   const [basicData, setBasicData] = useState({
     semesters: [1, 2, 3, 4, 5, 6, 7, 8],
     selectedDepartmentId: '',
     selectedSemester: 5,
     totalBatches: 4,
-    totalSubjects: 8
+    totalSubjects: 8,
+    academicYear: '2024-2025'
   });
 
   // Load initial data
@@ -182,7 +202,9 @@ export function TimetableGenerator() {
       {
         department: departments.find(d => d.id === basicData.selectedDepartmentId)?.name,
         semester: `Semester ${basicData.selectedSemester}`,
-        academicYear: '2024-2025'
+        academicYear: basicData.academicYear,
+        startDate: timeSlotConfig.startDate,
+        endDate: timeSlotConfig.endDate
       }
     );
   };
@@ -370,6 +392,40 @@ export function TimetableGenerator() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Academic Year
+                  </label>
+                  <input
+                    type="text"
+                    value={basicData.academicYear}
+                    onChange={(e) => setBasicData({...basicData, academicYear: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., 2024-2025"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={timeSlotConfig.startDate}
+                    onChange={(e) => setTimeSlotConfig({...timeSlotConfig, startDate: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    value={timeSlotConfig.endDate}
+                    onChange={(e) => setTimeSlotConfig({...timeSlotConfig, endDate: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Number of Batches
                   </label>
                   <input
@@ -402,7 +458,44 @@ export function TimetableGenerator() {
           {activeTab === 'parameters' && (
             <div className="p-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Optimization Parameters</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              <h3 className="text-lg font-medium text-gray-800 mb-4">Time Configuration</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Lunch Start Time
+                  </label>
+                  <input
+                    type="time"
+                    value={timeSlotConfig.lunchStartTime}
+                    onChange={(e) => setTimeSlotConfig({...timeSlotConfig, lunchStartTime: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Lunch End Time
+                  </label>
+                  <input
+                    type="time"
+                    value={timeSlotConfig.lunchEndTime}
+                    onChange={(e) => setTimeSlotConfig({...timeSlotConfig, lunchEndTime: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Class Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    value={timeSlotConfig.classDuration}
+                    onChange={(e) => setTimeSlotConfig({...timeSlotConfig, classDuration: Number(e.target.value)})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="30"
+                    max="180"
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Maximum Classes Per Day
@@ -416,6 +509,31 @@ export function TimetableGenerator() {
                     max="10"
                   />
                 </div>
+              </div>
+
+              <h3 className="text-lg font-medium text-gray-800 mb-4">Custom Time Slots</h3>
+              <div className="bg-gray-50 p-4 rounded-lg mb-8">
+                <div className="text-sm text-gray-600 mb-3">
+                  Configure your daily class schedule. Lunch break ({timeSlotConfig.lunchStartTime} - {timeSlotConfig.lunchEndTime}) is automatically excluded.
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {timeSlotConfig.customSlots.map((slot, index) => (
+                    <div key={index} className="bg-white p-3 rounded border border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">
+                          Slot {index + 1}
+                        </span>
+                      </div>
+                      <div className="mt-2 text-sm text-blue-600">
+                        {slot.startTime} - {slot.endTime}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <h3 className="text-lg font-medium text-gray-800 mb-4">Optimization Settings</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Preferred Start Time
@@ -438,22 +556,9 @@ export function TimetableGenerator() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Lunch Break Duration (minutes)
-                  </label>
-                  <input
-                    type="number"
-                    value={parameters.lunchBreakDuration}
-                    onChange={(e) => setParameters({...parameters, lunchBreakDuration: Number(e.target.value)})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="30"
-                    max="120"
-                  />
-                </div>
               </div>
 
-              <div className="mt-6 space-y-4">
+              <div className="space-y-4">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
