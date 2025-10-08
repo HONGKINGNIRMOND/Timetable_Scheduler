@@ -7,8 +7,13 @@ An intelligent academic scheduling system built with React, TypeScript, and Supa
 ### Administrator Panel
 - **Dashboard** with comprehensive statistics and metrics
 - **Timetable Generator** with advanced optimization algorithms
+  - Custom time slot configuration
+  - Configurable lunch hours (default: 11:30 AM - 12:20 PM)
+  - Date range selection for academic terms
+  - Multiple optimization strategies
 - **Data Management** for departments, classrooms, subjects, and faculty
 - **Approval workflow** for generated timetables
+- **PDF Export** with preview functionality
 - **Export and analytics** capabilities
 
 ### Student Panel
@@ -17,10 +22,18 @@ An intelligent academic scheduling system built with React, TypeScript, and Supa
 - **Search Timetables** - Browse timetables from other departments/batches
 - **Export functionality** for personal timetables
 
+### New Features
+- ✨ **Custom Time Slots** - Configure hourly class schedules
+- 🍽️ **Flexible Lunch Hours** - Set custom lunch break times
+- 📅 **Date Management** - Set start and end dates for timetables
+- 📄 **PDF Generation** - Professional PDF export with preview
+- 🎓 **Student Registration** - Self-service student account creation
+
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS
 - **Backend**: Supabase (PostgreSQL, Authentication, Real-time)
+- **PDF Generation**: jsPDF, jspdf-autotable
 - **Icons**: Lucide React
 - **Build Tool**: Vite
 
@@ -34,7 +47,7 @@ An intelligent academic scheduling system built with React, TypeScript, and Supa
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/yourusername/academic-timetable-platform.git
    cd academic-timetable-platform
    ```
 
@@ -43,21 +56,48 @@ An intelligent academic scheduling system built with React, TypeScript, and Supa
    npm install
    ```
 
+   This will install all required dependencies including:
+   - React & React DOM
+   - TypeScript
+   - Supabase Client
+   - jsPDF & jspdf-autotable (for PDF generation)
+   - Tailwind CSS
+   - Lucide React (icons)
+   - Vite (build tool)
+
 3. **Set up environment variables**
-   Create a `.env` file in the root directory:
-   ```env
-   VITE_SUPABASE_URL=https://your-project-id.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key-here
-   ```
+   - Copy `.env.example` to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Edit `.env` and add your Supabase credentials:
+     ```env
+     VITE_SUPABASE_URL=https://your-project-id.supabase.co
+     VITE_SUPABASE_ANON_KEY=your-anon-key-here
+     ```
 
 4. **Set up Supabase**
-   - Create a new Supabase project
-   - Run the migration files in the `supabase/migrations/` folder
-   - Set up authentication users in Supabase Auth dashboard
+   - Create a new Supabase project at [supabase.com](https://supabase.com)
+   - Go to Project Settings > API to get your URL and anon key
+   - Run the migration files in the `supabase/migrations/` folder in order:
+     1. `20250927050120_yellow_pine.sql`
+     2. `20250927050135_navy_moon.sql`
+     3. `20250927050637_shrill_scene.sql`
+     4. `20250927051324_misty_bonus.sql`
+     5. `20250930121128_floating_brook.sql`
+     6. `20250930122142_maroon_thunder.sql`
+   - You can run these in the Supabase SQL Editor
 
 5. **Start the development server**
    ```bash
    npm run dev
+   ```
+
+   The application will be available at `http://localhost:5173`
+
+6. **Build for production**
+   ```bash
+   npm run build
    ```
 
 ## 🔐 Demo Credentials
